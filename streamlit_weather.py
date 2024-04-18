@@ -39,14 +39,15 @@ if selected_temperature == "Local Temp":
 elif selected_temperature == "Resort Temp":
     temperature_metric = "adj_temp"
 
-filtered_df = df[(df["ResortName"].isin(selected_resorts)) & (df["Date"] >= start_date) & (df["Date"] <= end_date)]
+selected_visual = st.sidebar.selectbox("Select Visualization", ["below_32", "snowday", "overlay"])
+
+filtered_df = df[(df["Date"] >= start_date) & (df["Date"] <= end_date)]
 
 st.subheader("Weather Data for Selected Resorts and Date Range")
 st.write(filtered_df)
 
 st.subheader("Data Visualization")
 
-# Max Temperature Line Plot
 st.subheader(temperature_metric)
 fig, ax = plt.subplots(figsize=(10, 6))
 for resort in selected_resorts:
@@ -58,7 +59,6 @@ plt.xticks(rotation=45)
 plt.legend()
 st.pyplot(fig)
 
-# Precipitation Line Plot
 st.subheader("Precipitation")
 fig, ax = plt.subplots(figsize=(10, 6))
 for resort in selected_resorts:
@@ -70,7 +70,6 @@ plt.xticks(rotation=45)
 plt.legend()
 st.pyplot(fig)
 
-# Temperature Distribution KDE Plot
 st.subheader("Temperature Distribution")
 fig, ax = plt.subplots(figsize=(10, 6))
 palette = sns.color_palette("husl", len(selected_resorts))
@@ -82,7 +81,6 @@ plt.title("Temperature Distribution")
 plt.legend(title="Resort")
 st.pyplot(fig)
 
-# Boxplot of temperatures for the selected resorts
 st.subheader("Boxplot of Temperature for Selected Resorts")
 fig, ax = plt.subplots(figsize=(10, 6))
 sns.boxplot(data=filtered_df, x="ResortName", y=temperature_metric, ax=ax)
@@ -90,3 +88,32 @@ plt.xlabel("Resort")
 plt.ylabel(f"{temperature_metric} (°F)")
 plt.xticks(rotation=45)
 st.pyplot(fig)
+
+st.subheader("Counts of Days Below Freezing or Snow Days for All Resorts")
+if selected_visual == "below_32":
+    count_data = filtered_df.groupby("ResortName")["below_32"].sum().reset_index()
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=count_data, x="ResortName", y="below_32")
+    plt.xlabel("Resort")
+    plt.ylabel("Days Below Freezing")
+    plt.xticks(rotation=45)
+    st.pyplot()
+elif selected_visual == "snowday":
+    count_data = filtered_df.groupby("ResortName")["snowday"].sum().reset_index()
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=count_data, x="ResortName", y="snowday")
+    plt.xlabel("Resort")
+    plt.ylabel("Snow Days")
+    plt.xticks(rotation=45)
+    st.pyplot()
+elif selected_visual == "overlay":
+    count_data_below_32 = filtered_df.groupby("ResortName")["below_32"].sum().reset_index()
+    count_data_snowday = filtered_df.groupby("ResortName")["snowday"].sum().reset_index()
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=count_data_below_32, x="ResortName", y="below_32", color="blue", label="Days Below Freezing")
+    sns.barplot(data=count_data_snowday, x="ResortName", y="snowday", color="orange", label="Snow Days")
+    plt.xlabel("Resort")
+    plt.ylabel("Count")
+    plt.xticks(rotation=45)
+    plt.legend()
+    st.pyplot()
