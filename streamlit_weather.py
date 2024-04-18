@@ -66,14 +66,13 @@ plt.xticks(rotation=45)
 plt.legend()
 st.pyplot(fig)
 
-# Temperature Distribution Histogram
 st.subheader("Temperature Distribution")
 fig, ax = plt.subplots(figsize=(10, 6))
 palette = sns.color_palette("husl", len(selected_stations))
 for i, station in enumerate(selected_stations):
-    sns.histplot(data=filtered_df[filtered_df["Station"] == station], x=temperature_metric, kde=True, color=palette[i], label=station)
+    sns.kdeplot(data=filtered_df[filtered_df["Station"] == station][temperature_metric], color=palette[i], label=station)
 plt.xlabel(f"{temperature_metric} (°F)")
-plt.ylabel("Frequency")
+plt.ylabel("Density")
 plt.title("Temperature Distribution")
 plt.legend(title="Station")
 st.pyplot(fig)
