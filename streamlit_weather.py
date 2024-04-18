@@ -27,7 +27,6 @@ df["Station"] = df["Location"].str.split(",", n=1).str[0]
 
 selected_stations = st.sidebar.multiselect("Select Stations", df["Station"].unique())
 
-
 start_date = st.sidebar.date_input("Select Start Date")
 end_date = st.sidebar.date_input("Select End Date")
 
@@ -36,7 +35,7 @@ end_date = pd.to_datetime(end_date)
 
 temperature_metric = st.sidebar.selectbox("Select Temperature Metric", ["Temp Max", "Temp Avg", "Temp Min"])
 
-filtered_df = df[(df["Station"].isin([station1, station2])) & (df["Date"] >= start_date) & (df["Date"] <= end_date)]
+filtered_df = df[(df["Station"].isin(selected_stations)) & (df["Date"] >= start_date) & (df["Date"] <= end_date)]
 
 st.subheader("Weather Data for Selected Stations and Date Range")
 st.write(filtered_df)
@@ -46,8 +45,8 @@ st.subheader("Data Visualization")
 # Max Temperature Line Plot
 st.subheader(temperature_metric)
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.lineplot(data=filtered_df[filtered_df["Station"] == station1], x="Date", y=temperature_metric, marker="o", color="blue", label=station1)
-sns.lineplot(data=filtered_df[filtered_df["Station"] == station2], x="Date", y=temperature_metric, marker="o", color="orange", label=station2)
+for station in selected_stations:
+    sns.lineplot(data=filtered_df[filtered_df["Station"] == station], x="Date", y=temperature_metric, marker="o", label=station)
 plt.xlabel("Date")
 plt.ylabel(f"{temperature_metric} (°F)")
 plt.title(temperature_metric)
@@ -58,8 +57,8 @@ st.pyplot(fig)
 # Precipitation Line Plot
 st.subheader("Precipitation")
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.lineplot(data=filtered_df[filtered_df["Station"] == station1], x="Date", y="Precip Total", marker="o", color="blue", label=station1)
-sns.lineplot(data=filtered_df[filtered_df["Station"] == station2], x="Date", y="Precip Total", marker="o", color="orange", label=station2)
+for station in selected_stations:
+    sns.lineplot(data=filtered_df[filtered_df["Station"] == station], x="Date", y="Precip Total", marker="o", label=station)
 plt.xlabel("Date")
 plt.ylabel("Precipitation (inches)")
 plt.title("Precipitation")
@@ -70,21 +69,20 @@ st.pyplot(fig)
 # Temperature Distribution Histogram
 st.subheader("Temperature Distribution")
 fig, ax = plt.subplots(figsize=(10, 6))
-palette = {station1: "blue", station2: "orange"}
-sns.histplot(data=filtered_df, x=temperature_metric, hue="Station", kde=True, palette=palette)
+palette = sns.color_palette("husl", len(selected_stations))
+for i, station in enumerate(selected_stations):
+    sns.histplot(data=filtered_df[filtered_df["Station"] == station], x=temperature_metric, kde=True, color=palette[i], label=station)
 plt.xlabel(f"{temperature_metric} (°F)")
 plt.ylabel("Frequency")
 plt.title("Temperature Distribution")
 plt.legend(title="Station")
 st.pyplot(fig)
 
-# Boxplot of temperatures for the two selected locations
+# Boxplot of temperatures for the selected locations
 st.subheader("Boxplot of Temperature for Selected Locations")
 fig, ax = plt.subplots(figsize=(10, 6))
-station1_data = filtered_df[filtered_df["Station"] == station1][temperature_metric]
-station2_data = filtered_df[filtered_df["Station"] == station2][temperature_metric]
-sns.boxplot(data=[station1_data, station2_data], ax=ax)
-ax.set_xticklabels([station1, station2])
-plt.xlabel("Stations")
+sns.boxplot(data=filtered_df, x="Station", y=temperature_metric, ax=ax)
+plt.xlabel("Station")
 plt.ylabel(f"{temperature_metric} (°F)")
+plt.xticks(rotation=45)
 st.pyplot(fig)
