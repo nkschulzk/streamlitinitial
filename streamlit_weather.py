@@ -25,10 +25,8 @@ st.sidebar.title("Weather Analysis")
 
 df["Station"] = df["Location"].str.split(",", n=1).str[0]
 
-stations = df["Station"].unique()
+selected_stations = st.sidebar.multiselect("Select Stations", df["Station"].unique())
 
-station1 = st.sidebar.selectbox("Select Station 1", stations)
-station2 = st.sidebar.selectbox("Select Station 2", stations)
 
 start_date = st.sidebar.date_input("Select Start Date")
 end_date = st.sidebar.date_input("Select End Date")
